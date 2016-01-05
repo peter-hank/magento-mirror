@@ -250,8 +250,11 @@ class Mage_Catalog_Model_Resource_Product_Type_Configurable_Attribute_Collection
                 $options = $productAttribute->getFrontend()->getSelectOptions();
 
                 $optionsByValue = array();
+                $sortOrders = array();
+                $sortOrder = 1;
                 foreach ($options as $option) {
                     $optionsByValue[$option['value']] = $option['label'];
+                    $sortOrders[$option['value']] = $sortOrder++;
                 }
 
                 foreach ($this->getProduct()->getTypeInstance(true)
@@ -272,7 +275,8 @@ class Mage_Catalog_Model_Resource_Product_Type_Configurable_Attribute_Collection
                                 'store_label'                => $optionsByValue[$optionValue],
                                 'is_percent'                 => 0,
                                 'pricing_value'              => null,
-                                'use_default_value'          => true
+                                'use_default_value'          => true,
+                                'sort_order'                 => $sortOrders[$optionValue] 
                             );
                         }
                     }
@@ -301,6 +305,10 @@ class Mage_Catalog_Model_Resource_Product_Type_Configurable_Attribute_Collection
                     }
                 }
             }
+            
+            usort($values, function ($a, $b) {
+                return $a['sort_order'] > $b['sort_order'];
+            });
 
             foreach ($values as $data) {
                 $this->getItemById($data['product_super_attribute_id'])->addPrice($data);
